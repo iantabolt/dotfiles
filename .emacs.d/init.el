@@ -1,0 +1,126 @@
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.
+(package-initialize)
+
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives 
+	     '("marmalade" . "http://marmalade-repo.org/packages/"))
+(when (< emacs-major-version 24)
+  ;; For important compatibility libraries like cl-lib
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "c7a9a68bd07e38620a5508fef62ec079d274475c8f92d75ed0c33c45fbe306bc" "fad38808e844f1423c68a1888db75adf6586390f5295a03823fa1f4959046f81" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "9d91458c4ad7c74cf946bd97ad085c0f6a40c370ac0a1cbeb2e3879f15b40553" "b571f92c9bfaf4a28cb64ae4b4cdbda95241cd62cf07d942be44dc8f46c491f4" "9a9e75c15d4017c81a2fe7f83af304ff52acfadd7dde3cb57595919ef2e8d736" default)))
+ '(package-selected-packages
+   (quote
+    (atom-dark-theme fzf diff-hl helm-ls-git smart-mode-line markdown-mode+ darcula-theme yaml-mode fish-mode git-gutter+ color-theme-sanityinc-tomorrow zenburn-theme molokai-theme spaceline helm projectile git-gutter groovy-mode dockerfile-mode mwim smartparens multiple-cursors monokai-theme))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(delete-selection-mode 1)
+
+(setq inhibit-splash-screen t)
+(setq inhibit-startup-message t)
+
+;; Save all tempfiles in $TMPDIR/emacs$UID/                                                        
+(defconst emacs-tmp-dir (format "%s/%s%s/" temporary-file-directory "emacs" (user-uid)))
+(setq backup-directory-alist
+      `((".*" . ,emacs-tmp-dir)))
+(setq auto-save-file-name-transforms
+      `((".*" ,emacs-tmp-dir t)))
+(setq auto-save-list-file-prefix
+      emacs-tmp-dir)
+
+(load-theme 'sanityinc-tomorrow-night t)
+(require 'multiple-cursors)
+
+(global-set-key (kbd "M-j") 'mc/mark-next-like-this-word)
+(global-set-key (kbd "M-J") 'mc/unmark-next-like-this)
+(global-set-key (kbd "C-M-n") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-M-p") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-M-S-n") 'mc/unmark-previous-like-this)
+(global-set-key (kbd "C-M-S-p") 'mc/unmark-next-like-this)
+
+(show-paren-mode 1)
+
+(global-set-key (kbd "C-a") 'mwim-beginning-of-code-or-line)
+(global-set-key (kbd "C-e") 'mwim-end-of-code-or-line)
+(global-set-key (kbd "<home>") 'mwim-beginning-of-line-or-code)
+(global-set-key (kbd "<end>") 'mwim-end-of-line-or-code)
+
+(tool-bar-mode -1)
+
+(require 'powerline)
+(require 'spaceline-config)
+; (setq ns-use-srgb-colorspace nil)
+(setq powerline-default-separator 'utf-8)
+(set-face-attribute 'mode-line nil :box nil)
+
+(spaceline-emacs-theme)
+
+;; If async is installed
+(add-to-list 'load-path "~/.emacs.d/async")
+(add-to-list 'load-path "~/.emacs.d/helm")
+(require 'helm-ls-git)
+(global-set-key (kbd "M-x") #'helm-M-x)
+(global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+(global-set-key (kbd "C-x C-f") #'helm-find-files)
+(helm-mode 1)
+
+(when (not package-archive-contents)
+    (package-refresh-contents))
+
+(setq create-lockfiles nil)
+
+(global-set-key (kbd "C-/") 'undo)
+
+(when (display-graphic-p)
+  (set-default-font "Fira Code")
+  (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+		 (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+		 (36 . ".\\(?:>\\)")
+		 (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+		 (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+		 (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+		 (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+		 (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+		 (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+		 (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+		 (48 . ".\\(?:x[a-zA-Z]\\)")
+		 (58 . ".\\(?:::\\|[:=]\\)")
+		 (59 . ".\\(?:;;\\|;\\)")
+		 (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+		 (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+		 (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+		 (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+		 (91 . ".\\(?:]\\)")
+		 (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+		 (94 . ".\\(?:=\\)")
+		 (119 . ".\\(?:ww\\)")
+		 (123 . ".\\(?:-\\)")
+		 (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+		 (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)")
+		 )
+	       ))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+  (when (functionp 'mac-auto-operator-composition-mode)
+    (mac-auto-operator-composition-mode)))
+
+(global-git-gutter-mode +1)
+
+;; Revert current hunk
+(global-set-key (kbd "C-x v r") 'git-gutter:revert-hunk)

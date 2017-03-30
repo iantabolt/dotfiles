@@ -1,0 +1,9 @@
+"*":
+  core:
+    telemetryConsent: "limited"
+  editor:
+    fontFamily: "FiraCode-Light"
+  "exception-reporting":
+    userId: "3a91ec1d-7292-67b1-1393-b7b1597040a9"
+  welcome:
+    showOnStartup: false
