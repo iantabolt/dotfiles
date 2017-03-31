@@ -27,5 +27,6 @@ alias ec='emacsclient -nw'
 set -g EDITOR ec
 
 set -g theme_nerd_fonts yes
+set -g theme_color_scheme terminal
 
 test -e {$HOME}/.iterm2_shell_integration.fish ; and source {$HOME}/.iterm2_shell_integration.fish
