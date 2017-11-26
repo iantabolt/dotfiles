@@ -6,3 +6,5 @@ brew install tree
 brew install emacs --with-cocoa
 brew install fish
 
+brew tap caskroom/fonts
+brew cask install font-fira-code
