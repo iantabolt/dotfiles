@@ -11,3 +11,6 @@ brew install fish
 brew tap homebrew/cask-fonts
 brew cask install font-fira-code
 brew cask install rectangle
+
+curl -L https://get.oh-my.fish | fish
+omf install https://github.com/iantabolt/theme-bobthefish
