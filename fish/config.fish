@@ -10,3 +10,6 @@ set -g theme_color_scheme terminal
 set EDITOR emacs
 
 alias ec "emacsclient -t --alternate-editor=''"
+alias ecw "open -a emacs"
+
+set PATH /Users/iantabolt/.gem/ruby/2.3.0/bin $PATH

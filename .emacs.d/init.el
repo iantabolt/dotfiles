@@ -104,5 +104,6 @@
 (global-set-key (kbd "C-x C-f") #'helm-browse-project)
 (global-set-key (kbd "C-x C-a") #'helm-find-files)
 
+(global-auto-revert-mode 1)
 (setq-default indent-tabs-mode nil)
 (setq tab-width 2)
