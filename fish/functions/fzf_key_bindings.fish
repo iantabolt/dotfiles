@@ -1,6 +1,80 @@
+#     ____      ____
+#    / __/___  / __/
+#   / /_/_  / / /_
+#  / __/ / /_/ __/
+# /_/   /___/_/ key-bindings.fish
+#
+# - $FZF_TMUX_OPTS
+# - $FZF_CTRL_T_COMMAND
+# - $FZF_CTRL_T_OPTS
+# - $FZF_CTRL_R_OPTS
+# - $FZF_ALT_C_COMMAND
+# - $FZF_ALT_C_OPTS
+
 # Key bindings
 # ------------
 function fzf_key_bindings
+
+  function fzf-git-branch-widget -d "List git branches"
+    set -l commandline (__fzf_parse_commandline)
+    set -l dir $commandline[1]
+    set -l fzf_query $commandline[2]
+    
+    test -n "$FZF_CMD_G_COMMAND"; or set -l FZF_CMD_G_COMMAND "
+    git for-each-ref --sort='-committerdate' --format='%(refname)' refs/heads | sed -e 's-refs/heads/--'"
+    
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
+    begin
+      set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT --reverse $FZF_DEFAULT_OPTS $FZF_CMD_G_OPTS --preview='git log --color {} --not master'"
+      eval "$FZF_CMD_G_COMMAND | "(__fzfcmd)' -m --query "'$fzf_query'"' | while read -l r; set result $result $r; end
+    end
+    if [ -z "$result" ]
+      commandline -f repaint
+      return
+    else
+      # Remove last token from commandline.
+      commandline -t ""
+    end
+    for i in $result
+      commandline -it -- (string escape $i)
+      commandline -it -- ' '
+    end
+    commandline -f repaint
+  end
+
+  function fzf-git-commit-widget -d "List git commits"
+    set -l commandline (__fzf_parse_commandline)
+    set -l dir $commandline[1]
+    set -l fzf_query $commandline[2]
+    
+    test -n "$FZF_CMD_L_COMMAND"; or set -l FZF_CMD_L_COMMAND "
+    git log -1000 --color --date=relative --pretty=format:'%C(yellow)%h %Cblue%>(12)%ad %Cgreen%<(7)%aN%Cred%d %Creset%s' | grep -v fsproduser"
+    
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
+    set -l log_line_to_hash "echo {} | grep -o '[a-f0-9]\{7\}' | head -1"
+    set -l view_commit "$log_line_to_hash | xargs -I % sh -c 'git show --color=always % | less -R'"
+    begin
+      set -lx FZF_DEFAULT_OPTS "
+      --ansi
+      --height $FZF_TMUX_HEIGHT
+      --reverse $FZF_DEFAULT_OPTS
+      --tiebreak=index
+      $FZF_CMD_L_OPTS"
+      eval "$FZF_CMD_L_COMMAND | "(__fzfcmd)' -m --query "'$fzf_query'"' | while read -l r; set result $result $r; end
+    end
+    if [ -z "$result" ]
+      commandline -f repaint
+      return
+    else
+      # Remove last token from commandline.
+      commandline -t ""
+    end
+    for i in $result
+      commandline -it -- (git rev-parse (string escape $i | grep -o '[a-f0-9]\{7\}'))
+      commandline -it -- ' '
+    end
+    commandline -f repaint
+  end
 
   # Store current token in $dir as root for the 'find' command
   function fzf-file-widget -d "List files and folders"
@@ -10,15 +84,15 @@ function fzf_key_bindings
 
     # "-path \$dir'*/\\.*'" matches hidden files/folders inside $dir but not
     # $dir itself, even if hidden.
-    set -q FZF_CTRL_T_COMMAND; or set -l FZF_CTRL_T_COMMAND "
+    test -n "$FZF_CMD_L_COMMAND"; or set -l FZF_CTRL_T_COMMAND "
     command find -L \$dir -mindepth 1 \\( -path \$dir'*/\\.*' -o -fstype 'sysfs' -o -fstype 'devfs' -o -fstype 'devtmpfs' \\) -prune \
     -o -type f -print \
     -o -type d -print \
     -o -type l -print 2> /dev/null | sed 's@^\./@@'"
 
-    set -q FZF_TMUX_HEIGHT; or set FZF_TMUX_HEIGHT 40%
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
     begin
-      set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT --reverse $FZF_DEFAULT_OPTS $FZF_CTRL_T_OPTS"
+      set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT --reverse $FZF_DEFAULT_OPTS $FZF_CTRL_T_OPTS --preview='bat --color=always {}'"
       eval "$FZF_CTRL_T_COMMAND | "(__fzfcmd)' -m --query "'$fzf_query'"' | while read -l r; set result $result $r; end
     end
     if [ -z "$result" ]
@@ -36,18 +110,18 @@ function fzf_key_bindings
   end
 
   function fzf-history-widget -d "Show command history"
-    set -q FZF_TMUX_HEIGHT; or set FZF_TMUX_HEIGHT 40%
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
     begin
       set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort $FZF_CTRL_R_OPTS +m"
 
-      set -l FISH_MAJOR (echo $FISH_VERSION | cut -f1 -d.)
-      set -l FISH_MINOR (echo $FISH_VERSION | cut -f2 -d.)
+      set -l FISH_MAJOR (echo $version | cut -f1 -d.)
+      set -l FISH_MINOR (echo $version | cut -f2 -d.)
 
       # history's -z flag is needed for multi-line support.
       # history's -z flag was added in fish 2.4.0, so don't use it for versions
       # before 2.4.0.
       if [ "$FISH_MAJOR" -gt 2 -o \( "$FISH_MAJOR" -eq 2 -a "$FISH_MINOR" -ge 4 \) ];
-        history -z | eval (__fzfcmd) --read0 -q '(commandline)' | perl -pe 'chomp if eof' | read -lz result
+        history -z | eval (__fzfcmd) --read0 --print0 -q '(commandline)' | read -lz result
         and commandline -- $result
       else
         history | eval (__fzfcmd) -q '(commandline)' | read -l result
@@ -62,10 +136,10 @@ function fzf_key_bindings
     set -l dir $commandline[1]
     set -l fzf_query $commandline[2]
 
-    set -q FZF_ALT_C_COMMAND; or set -l FZF_ALT_C_COMMAND "
+    test -n "$FZF_ALT_C_COMMAND"; or set -l FZF_ALT_C_COMMAND "
     command find -L \$dir -mindepth 1 \\( -path \$dir'*/\\.*' -o -fstype 'sysfs' -o -fstype 'devfs' -o -fstype 'devtmpfs' \\) -prune \
     -o -type d -print 2> /dev/null | sed 's@^\./@@'"
-    set -q FZF_TMUX_HEIGHT; or set FZF_TMUX_HEIGHT 40%
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
     begin
       set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT --reverse $FZF_DEFAULT_OPTS $FZF_ALT_C_OPTS"
       eval "$FZF_ALT_C_COMMAND | "(__fzfcmd)' +m --query "'$fzf_query'"' | read -l result
@@ -82,15 +156,19 @@ function fzf_key_bindings
   end
 
   function __fzfcmd
-    set -q FZF_TMUX; or set FZF_TMUX 0
-    set -q FZF_TMUX_HEIGHT; or set FZF_TMUX_HEIGHT 40%
-    if [ $FZF_TMUX -eq 1 ]
-      echo "fzf-tmux -d$FZF_TMUX_HEIGHT"
+    test -n "$FZF_TMUX"; or set FZF_TMUX 0
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
+    if [ -n "$FZF_TMUX_OPTS" ]
+      echo "fzf-tmux $FZF_TMUX_OPTS -- "
+    else if [ $FZF_TMUX -eq 1 ]
+      echo "fzf-tmux -d$FZF_TMUX_HEIGHT -- "
     else
       echo "fzf"
     end
   end
 
+  bind \eg fzf-git-branch-widget
+  bind \el fzf-git-commit-widget
   bind \ct fzf-file-widget
   bind \cr fzf-history-widget
   bind \ec fzf-cd-widget

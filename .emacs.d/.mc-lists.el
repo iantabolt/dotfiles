@@ -3,19 +3,11 @@
 
 (setq mc/cmds-to-run-for-all
       '(
-        c-electric-paren
-        c-electric-slash
-        electric-newline-and-maybe-indent
-        indent-for-tab-command
         kill-region
-        markdown-outdent-or-delete
         mwim-beginning-of-code-or-line
         mwim-end-of-code-or-line
-        sgml-slash
         ))
 
 (setq mc/cmds-to-run-once
       '(
-        insert-parentheses
-        xterm-paste
         ))

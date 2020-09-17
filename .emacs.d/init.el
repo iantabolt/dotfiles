@@ -1,3 +1,16 @@
+; package installs:
+; powerline
+; dash
+; helm
+; helm-ls-git
+; markdown-mode
+; color-theme-sanityinc-tomorrow
+; multiple cursors
+; scala-mode
+; mwim
+; web-mode
+; spaceline
+; thrift
 (package-initialize)
 
 (require 'package)
@@ -45,9 +58,8 @@
 
 (spaceline-emacs-theme)
 
-
 (when (display-graphic-p)
-  (set-default-font "Fira Code")
+  (set-frame-font "Fira Code")
   (let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
 		 (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
 		 (36 . ".\\(?:>\\)")
@@ -84,9 +96,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-enabled-themes '(sanityinc-tomorrow-night))
+ '(custom-safe-themes
+   '("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" default))
  '(package-selected-packages
-   (quote
-    (yaml-mode markdown-mode thrift web-mode helm-ls-git helm-etags-plus scala-mode mwim spaceline multiple-cursors color-theme-sanityinc-tomorrow))))
+   '(fish-mode helm-git-files helm-git yaml-mode markdown-mode thrift web-mode helm-ls-git helm-etags-plus scala-mode mwim spaceline multiple-cursors color-theme-sanityinc-tomorrow)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -96,6 +110,8 @@
 
 ;; Packages to install:
 ;; mwim spaceline multiple-cursors color-theme-sanityinc-tomorrow
+
+(global-set-key (kbd "C-x g") 'magit-status)
 
 (load-file "~/.emacs.d/brogrammer-theme.el")
 
