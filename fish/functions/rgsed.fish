@@ -6,9 +6,9 @@ function rgsed
   switch $confirm
     case Y y
       for rgout in (rg -n $pattern --replace $replace $argv[3..99])
-        echo "Rgout: $rgout"
+        # echo "Rgout: $rgout"
         set matches (echo $rgout | string match -r '(.*?):(\d+):(.*)')
-        echo "Matches: $matches" 
+        # echo "Matches: $matches" 
         set replacement (string escape -n $matches[4])
         set cmd $matches[3]"s~.*~"$replacement"~"
         sed -i '' $cmd $matches[2]

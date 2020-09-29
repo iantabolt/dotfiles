@@ -15,6 +15,39 @@
 # ------------
 function fzf_key_bindings
 
+  function fzf-scala-definition-widget -d "Find scala definition"
+    set -l commandline (__fzf_parse_commandline)
+    set -l dir $commandline[1]
+    set -l search $commandline[2]
+    set -l def_pattern '^(?:\s*)((private |protected )?(def|trait|(case |abstract )?class) \w+)'
+    set -l pattern $def_pattern$search
+    test -n "$FZF_CTRL_S_COMMAND"; or set -l FZF_CTRL_S_COMMAND "rg --color always --line-number '$pattern' -g '*.scala' -o"
+    set preview "
+        set matches (echo {} | string split ':')
+        set start (math \$matches[2] - 5)
+        set end (math \$matches[2] + 20)
+        bat --color always \$matches[1] -r \$start:\$end -H \$matches[2]
+        "
+    test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
+    begin
+      set -lx FZF_DEFAULT_OPTS "--ansi --reverse --height $FZF_TMUX_HEIGHT $FZF_DEFAULT_OPTS $FZF_CTRL_S_OPTS --preview=\"$preview\""
+      eval "$FZF_CTRL_S_COMMAND | "(__fzfcmd)' -m --query "'$search'"' | while read -l r; set result $result $r; end
+    end
+    if [ -z "$result" ]
+      commandline -f repaint
+      return
+    else
+      # Remove last token from commandline.
+      commandline -t ""
+    end
+    for i in $result
+      set matches (echo $i | string match -r '(.*?):(\d+):(.*)')
+      commandline -it -- $matches[2]
+      commandline -it -- ' '
+    end
+    commandline -f repaint
+  end
+
   function fzf-git-branch-widget -d "List git branches"
     set -l commandline (__fzf_parse_commandline)
     set -l dir $commandline[1]
@@ -22,7 +55,7 @@ function fzf_key_bindings
     
     test -n "$FZF_CMD_G_COMMAND"; or set -l FZF_CMD_G_COMMAND "
     git for-each-ref --sort='-committerdate' --format='%(refname)' refs/heads | sed -e 's-refs/heads/--'"
-    
+   
     test -n "$FZF_TMUX_HEIGHT"; or set FZF_TMUX_HEIGHT 40%
     begin
       set -lx FZF_DEFAULT_OPTS "--height $FZF_TMUX_HEIGHT --reverse $FZF_DEFAULT_OPTS $FZF_CMD_G_OPTS --preview='git log --color {} --not master'"
@@ -84,7 +117,7 @@ function fzf_key_bindings
 
     # "-path \$dir'*/\\.*'" matches hidden files/folders inside $dir but not
     # $dir itself, even if hidden.
-    test -n "$FZF_CMD_L_COMMAND"; or set -l FZF_CTRL_T_COMMAND "
+    test -n "$FZF_CTRL_T_COMMAND"; or set -l FZF_CTRL_T_COMMAND "
     command find -L \$dir -mindepth 1 \\( -path \$dir'*/\\.*' -o -fstype 'sysfs' -o -fstype 'devfs' -o -fstype 'devtmpfs' \\) -prune \
     -o -type f -print \
     -o -type d -print \
@@ -167,6 +200,7 @@ function fzf_key_bindings
     end
   end
 
+  bind \cs fzf-scala-definition-widget
   bind \eg fzf-git-branch-widget
   bind \el fzf-git-commit-widget
   bind \ct fzf-file-widget
