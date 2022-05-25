@@ -9,8 +9,8 @@ brew install emacs
 brew install fish
 
 brew tap homebrew/cask-fonts
-brew cask install font-fira-code
-brew cask install rectangle
+brew install font-fira-code font-fira-code-nerd-font
+brew install rectangle
 
-curl -L https://get.oh-my.fish | fish
+curl https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install | fish
 omf install https://github.com/iantabolt/theme-bobthefish
