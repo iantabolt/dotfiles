@@ -1,16 +1,9 @@
 #!/bin/bash
 
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew install fzf
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew bundle
 yes | /usr/local/opt/fzf/install
-brew update
-brew install tree
-brew install emacs
-brew install fish
-
-brew tap homebrew/cask-fonts
-brew install font-fira-code font-fira-code-nerd-font
-brew install rectangle
+brew install --cask emacs-mac
 
 curl https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install | fish
 omf install https://github.com/iantabolt/theme-bobthefish
